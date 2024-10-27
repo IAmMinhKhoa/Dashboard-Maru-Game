@@ -1,0 +1,69 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Make the leftbar a flex container */
+.leftbar {
+    display: flex;
+    flex-direction: column; /* Arrange items vertically */
+    justify-content: space-between; /* Space between elements */
+    height: 100vh; /* Full height of the viewport */
+    background-color: #f8f9fa;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab styling */
+.leftbar .tab {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #e9ecef;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.leftbar .tab:hover {
+    background-color: #d4d9dd;
+}
+
+.leftbar .tab.active {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Adjust .top and .bottom */
+.leftbar .top {
+    flex-grow: 1; /* This allows the top section to take up remaining space */
+}
+
+.leftbar .bottom {
+    margin-top: auto; /* This pushes the bottom div to the bottom */
+}
+
+/* Content */
+.content {
+    width: 80%;
+    padding: 20px;
+    background-color: #ffffff;
+    overflow-y: auto;
+}
+
+.tabcontent {
+    display: none;
+}
+
+.tabcontent h2 {
+    margin-top: 0;
+}

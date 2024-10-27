@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Layout</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left sidebar -->
+        <div class="leftbar">
+            <div class="top">
+                <div class="tab" onclick="openTab(event, 'tab1')">Over View</div>
+                <div class="tab" onclick="openTab(event, 'tab2')">PLayers</div>
+            </div>
+
+            <div class="bottom">
+                <div class="tab" onclick="checkConnection()">Check Connect</div>
+            </div>
+        </div>
+
+        <!-- Right content area -->
+        <div class="content">
+            <div id="tab1" class="tabcontent">
+                <h2>Content for Tab 1</h2>
+                <p>This is the content for Tab 1.</p>
+            </div>
+        
+            <div id="tab2" class="tabcontent" style="display:none">
+                <h2>Player List</h2>
+                <!-- Phần tử để chứa danh sách người chơi -->
+                <div id="playerList">
+                    <!-- Dữ liệu người chơi sẽ được hiển thị ở đây -->
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="script.js"></script>
+    <script src="ApiPlayfab.js"></script>
+</body>
+</html>
