@@ -1,4 +1,11 @@
 let config;
+let listDataPlayer;
+let currentDataPlayer;
+let sortDirection = {
+    PlayerId: 'asc',
+    Created: 'asc',
+    LastLogin: 'asc'
+};
 
 async function loadConfig() {
     const response = await fetch('config.json');
@@ -72,6 +79,8 @@ async function loadAllPlayers() {
                 hasMorePlayers = false;
             }
         }
+        listDataPlayer=allPlayers;
+        currentDataPlayer=allPlayers;
          displayPlayers(allPlayers); // Hiển thị người chơi ra giao diện
     } catch (error) {
         console.error('Error loading players:', error);
@@ -81,23 +90,74 @@ async function loadAllPlayers() {
 // Hiển thị danh sách người chơi ra giao diện
 function displayPlayers(players) {
     const playerListContainer = document.getElementById('playerList');
+    playerListContainer.innerHTML = ""; // Clear previous content
+
     if(players.length === 0) {
         playerListContainer.textContent = "No players to display.";
         return;
     }
+
+    // Create the table and table header
+    const table = document.createElement('table');
+    table.classList.add('player-table');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+    <th>Player ID <button onclick="sortPlayers('PlayerId')">Sort</button></th>
+    <th>Created <button onclick="sortPlayers('Created')">Sort</button></th>
+    <th>Last Login <button onclick="sortPlayers('LastLogin')">Sort</button></th>
+`;
+
+    table.appendChild(headerRow);
+
+    // Populate the table with player data
     players.forEach(player => {
-        const playerItem = document.createElement('div');
-        playerItem.classList.add('player-item');
-        playerItem.innerHTML = `
-            <p>Player ID: ${player.PlayerId}</p>
-            <p>Last Login: ${player.LastLogin}</p>
-            <p>Created: ${player.Created}</p>
-            <hr/>
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${player.PlayerId}</td>
+            <td>${Common.convertISOToDateTime(player.Created)}</td>
+            <td>${Common.convertISOToDateTime(player.LastLogin)}</td>
         `;
-        playerListContainer.appendChild(playerItem);
+        table.appendChild(row);
     });
+
+    playerListContainer.appendChild(table);
+}
+function searchPlayers(searchTerm) {
+    const filteredPlayers = listDataPlayer.filter(player =>
+        player.PlayerId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    currentDataPlayer=filteredPlayers;
+    displayPlayers(filteredPlayers); // Hiển thị kết quả tìm kiếm
+}
+function sortPlayers(criteria) {
+    const direction = sortDirection[criteria];
+
+    // Sắp xếp danh sách người chơi dựa trên tiêu chí
+    currentDataPlayer.sort((a, b) => {
+        if (criteria === 'Created' || criteria === 'LastLogin') {
+            return direction === 'asc' 
+                ? new Date(a[criteria]) - new Date(b[criteria])
+                : new Date(b[criteria]) - new Date(a[criteria]);
+        } else {
+            return direction === 'asc'
+                ? a[criteria].localeCompare(b[criteria])
+                : b[criteria].localeCompare(a[criteria]);
+        }
+    });
+
+    // Đổi chiều sắp xếp cho lần tiếp theo
+    sortDirection[criteria] = direction === 'asc' ? 'desc' : 'asc';
+
+    // Hiển thị lại danh sách sau khi sắp xếp
+    displayPlayers(currentDataPlayer);
 }
 
-
+// ------------------------------------------------------
 // Load the config when the script starts
 loadConfig();
+
+// Cập nhật sự kiện click cho nút tìm kiếm
+document.getElementById('searchButton').addEventListener('click', function() {
+    const searchTerm = document.getElementById('searchInput').value;
+    searchPlayers(searchTerm); // Gọi hàm tìm kiếm
+});
