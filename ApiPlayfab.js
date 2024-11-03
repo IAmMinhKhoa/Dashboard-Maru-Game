@@ -1,6 +1,6 @@
 let config;
-let listDataPlayer;
-let currentDataPlayer;
+let listDataPlayer; //list data player fetch from api
+let currentDataPlayer; //list player current search and sort
 let sortDirection = {
     PlayerId: 'asc',
     Created: 'asc',
@@ -92,7 +92,7 @@ function displayPlayers(players) {
     const playerListContainer = document.getElementById('playerList');
     playerListContainer.innerHTML = ""; // Clear previous content
 
-    if(players.length === 0) {
+    if (players.length === 0) {
         playerListContainer.textContent = "No players to display.";
         return;
     }
@@ -102,11 +102,12 @@ function displayPlayers(players) {
     table.classList.add('player-table');
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = `
-    <th>Player ID <button onclick="sortPlayers('PlayerId')">Sort</button></th>
-    <th>Created <button onclick="sortPlayers('Created')">Sort</button></th>
-    <th>Last Login <button onclick="sortPlayers('LastLogin')">Sort</button></th>
-`;
-
+        <th>Player ID <button onclick="sortPlayers('PlayerId')">Sort</button></th>
+        <th>Created <button onclick="sortPlayers('Created')">Sort</button></th>
+        <th>Last Login <button onclick="sortPlayers('LastLogin')">Sort</button></th>
+        <th>Actions</th> <!-- New column for the action button -->
+        <th>Delete</th> 
+    `;
     table.appendChild(headerRow);
 
     // Populate the table with player data
@@ -116,12 +117,19 @@ function displayPlayers(players) {
             <td>${player.PlayerId}</td>
             <td>${Common.convertISOToDateTime(player.Created)}</td>
             <td>${Common.convertISOToDateTime(player.LastLogin)}</td>
+            <td>
+                <button onclick="getTitleDataPlayerById('${player.PlayerId}')">Get Data</button>
+            </td> <!-- Action button to get player data -->
+            <td>
+                <button onclick="deletePlayerAccount('${player.PlayerId}')">Delete</button>
+            </td> 
         `;
         table.appendChild(row);
     });
 
     playerListContainer.appendChild(table);
 }
+
 function searchPlayers(searchTerm) {
     const filteredPlayers = listDataPlayer.filter(player =>
         player.PlayerId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -151,6 +159,91 @@ function sortPlayers(criteria) {
     // Hiển thị lại danh sách sau khi sắp xếp
     displayPlayers(currentDataPlayer);
 }
+async function getTitleDataPlayerById(playerId){
+    if (!config) {
+        await loadConfig(); // Load PlayFab configuration
+    }
+    const { titleId, secretKey,KeyPlayerData } = config;
+    const url = `https://${titleId}.playfabapi.com/Server/GetUserData`;
+
+    const requestData = {
+        "PlayFabId": playerId,
+        "Keys": KeyPlayerData // Keys you want to retrieve
+    };
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-SecretKey': secretKey
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        console.log('Data successfully set:', JSON.stringify(data, null, 2));
+
+    } catch (error) {
+        console.error('Error setting player data:', error);
+    }
+
+}
+async function deletePlayerAccount(playerId) {
+    if (!config) {
+        await loadConfig(); // Load PlayFab configuration if not already loaded
+    }
+    const { titleId, secretKey } = config; // Extract titleId and secretKey from config
+    const url = `https://${titleId}.playfabapi.com/Server/DeletePlayer`;
+
+    // Show a confirmation alert to the user
+    const userConfirmed = confirm("Are you sure you want to delete this player account? This action cannot be undone.");
+
+    // If the user cancels, exit the function
+    if (!userConfirmed) {
+        console.log("Account deletion canceled.");
+        return;
+    }
+
+    const requestData = {
+        "PlayFabId": playerId // The ID of the player account to delete
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-SecretKey': secretKey
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        console.log('Player account deleted successfully:', JSON.stringify(data, null, 2));
+        alert("Player account deleted successfully.");
+
+        // Reload the player data and render it
+        await loadAllPlayers(); // Fetch the updated list of players
+    } catch (error) {
+        console.error('Error deleting player account:', error);
+        alert("An error occurred while deleting the player account: " + error.message);
+    }
+}
+
+
+// Example usage: deletePlayerAccount('8CD56DF9AA043452');
+
+
+// Example usage: deletePlayerAccount('8CD56DF9AA043452');
+
 
 // ------------------------------------------------------
 // Load the config when the script starts
