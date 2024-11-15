@@ -1,5 +1,8 @@
 # Web Admin Feature for Player Management
 
+https://iamminhkhoa.github.io/Dashboard-Maru-Game/
+
+
 ## Overview
 This web admin feature provides functionalities to manage player information within a game application. It includes features to view player data, such as player ID, last login timestamp, and player-specific data stored in JSON format.
 
