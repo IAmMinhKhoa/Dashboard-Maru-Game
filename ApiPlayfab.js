@@ -199,15 +199,8 @@ async function deletePlayerAccount(playerId) {
     const { titleId, secretKey } = config; // Extract titleId and secretKey from config
     const url = `https://${titleId}.playfabapi.com/Server/DeletePlayer`;
 
-    // Show a confirmation alert to the user
-    const userConfirmed = confirm("Are you sure you want to delete this player account? This action cannot be undone.");
-
-    // If the user cancels, exit the function
-    if (!userConfirmed) {
-        console.log("Account deletion canceled.");
-        return;
-    }
-
+  
+   
     const requestData = {
         "PlayFabId": playerId // The ID of the player account to delete
     };
@@ -228,21 +221,48 @@ async function deletePlayerAccount(playerId) {
         }
 
         console.log('Player account deleted successfully:', JSON.stringify(data, null, 2));
-        alert("Player account deleted successfully.");
+    
 
         // Reload the player data and render it
         await loadAllPlayers(); // Fetch the updated list of players
     } catch (error) {
         console.error('Error deleting player account:', error);
-        alert("An error occurred while deleting the player account: " + error.message);
+       // alert("An error occurred while deleting the player account: " + error.message);
     }
 }
 
+async function deleteAllPlayers() {
+    if (!config) {
+        await loadConfig(); // Load PlayFab configuration if not already loaded
+    }
 
-// Example usage: deletePlayerAccount('8CD56DF9AA043452');
+    // Show a confirmation alert to the user
+    const userConfirmed = confirm("Are you sure you want to delete all player accounts? This action cannot be undone.");
 
+    if (!userConfirmed) {
+        console.log("Mass account deletion canceled.");
+        return;
+    }
 
-// Example usage: deletePlayerAccount('8CD56DF9AA043452');
+    if (!currentDataPlayer || currentDataPlayer.length === 0) {
+        alert("No players available for deletion.");
+        return;
+    }
+
+    try {
+        for (const player of currentDataPlayer) {
+            console.log(`Deleting player with ID: ${player.PlayerId}`);
+            await deletePlayerAccount(player.PlayerId); // Use the existing deletePlayerAccount function
+        }
+
+        alert("All player accounts deleted successfully.");
+        await loadAllPlayers(); // Refresh the player list
+    } catch (error) {
+        console.error('Error deleting player accounts:', error);
+        alert("An error occurred during the mass deletion process: " + error.message);
+    }
+}
+
 
 
 // ------------------------------------------------------
@@ -254,3 +274,6 @@ document.getElementById('searchButton').addEventListener('click', function() {
     const searchTerm = document.getElementById('searchInput').value;
     searchPlayers(searchTerm); // Gọi hàm tìm kiếm
 });
+
+// Add event listener for the "Delete All" button
+document.getElementById('deleteAllButton').addEventListener('click', deleteAllPlayers);
