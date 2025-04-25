@@ -41,7 +41,7 @@ async function loadAllPlayers() {
 
     const { titleId, secretKey,SegmentId } = config;
     const url = `https://${titleId}.playfabapi.com/Server/GetPlayersInSegment`;
-
+    console.log('url', url);
     const requestData = {
         "SegmentId": SegmentId, // Thay bằng ID của phân khúc người chơi
         "MaxBatchSize": 100, // Số lượng người chơi tối đa trả về trong một lần gọi API
@@ -260,6 +260,39 @@ async function deleteAllPlayers() {
     } catch (error) {
         console.error('Error deleting player accounts:', error);
         alert("An error occurred during the mass deletion process: " + error.message);
+    }
+}
+async function unlinkCustomId(playerId) {
+    if (!config) await loadConfig();
+    const { titleId, secretKey } = config;
+
+    const url = `https://${titleId}.playfabapi.com/Server/UnlinkServerCustomId`;
+    const requestData = {
+        PlayFabId: playerId,
+        CustomId: playerId // hoặc Custom ID thật sự nếu khác
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-SecretKey': secretKey
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        console.log("✅ Unlinked custom ID successfully:", JSON.stringify(data, null, 2));
+        alert(`Unlinked account for PlayerId: ${playerId}`);
+    } catch (error) {
+        console.error('❌ Error unlinking account:', error);
+        alert(`Error unlinking account: ${error.message}`);
     }
 }
 
